@@ -1,8 +1,8 @@
-# cdp-python-backend-template
+# ai-sdlc-agentic-ucd-backend
 
 This is work-in-progress. See [To Do List](./TODO.md)
 
-- [cdp-python-backend-template](#cdp-python-backend-template)
+- [ai-sdlc-agentic-ucd-backend](#ai-sdlc-agentic-ucd-backend)
   - [Requirements](#requirements)
     - [Python](#python)
     - [Linting and Formatting](#linting-and-formatting)
