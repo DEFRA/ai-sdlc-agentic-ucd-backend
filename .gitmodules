@@ -1,0 +1,3 @@
+[submodule "agentic-ucd-admin-vault"]
+	path = agentic-ucd-admin-vault
+	url = git@github.com:DEFRA/defra-ai-agentic-ucd-admin.git
