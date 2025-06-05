@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from logging import getLogger
 
 from app.common.exceptions import NotFoundError
@@ -39,7 +39,7 @@ async def start_analysis_workflow(
 
         # Initialize agent state
         agent_state = AgentState(
-            process_start_date=datetime.now(datetime.timezone.utc),
+            process_start_date=datetime.now(timezone.utc),
             status=AgentStatus.STARTING,
         )
 
@@ -207,5 +207,5 @@ Based on our analysis of {num_transcripts} user interview transcript(s), we have
 3. Develop accessibility improvement roadmap
 
 ---
-*Analysis completed on {datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")} UTC*
+*Analysis completed on {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")} UTC*
 """
