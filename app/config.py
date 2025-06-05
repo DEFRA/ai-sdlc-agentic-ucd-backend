@@ -21,5 +21,9 @@ class AppConfig(BaseSettings):
     aws_access_key_id: str = "test"  # noqa: S105
     aws_secret_access_key: str = "test"  # noqa: S105
 
+    # AWS Bedrock Configuration
+    bedrock_model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+    bedrock_region: str = "eu-central-1"
+
 
 config = AppConfig()
