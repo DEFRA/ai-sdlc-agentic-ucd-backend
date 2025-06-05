@@ -14,5 +14,12 @@ class AppConfig(BaseSettings):
     enable_metrics: bool = False
     tracing_header: str = "x-cdp-request-id"
 
+    # S3 Configuration
+    s3_bucket_name: str = "research-analysis-bucket"
+    localstack_endpoint: Optional[str] = None  # Will be set via environment
+    aws_region: str = "eu-west-2"
+    aws_access_key_id: str = "test"  # noqa: S105
+    aws_secret_access_key: str = "test"  # noqa: S105
+
 
 config = AppConfig()
