@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Research Analysis Backend is a FastAPI-based system that processes user research interview transcripts through an agentic workflow to generate affinity maps and research findings reports. The system provides a REST API for session management, file uploads, and workflow orchestration.
+The Research Analysis Backend is a FastAPI-based system that processes user research interview transcripts through an agentic workflow to generate affinity maps and research findings reports. The system provides a REST API for session management, file uploads, and workflow orchestration using LangGraph for the AI-powered analysis workflow.
 
 ## Technology Stack
 
@@ -11,6 +11,11 @@ The Research Analysis Backend is a FastAPI-based system that processes user rese
 - **Python 3.12+**: Runtime environment
 - **Pydantic v2**: Data validation and settings management
 - **Uvicorn**: ASGI server for production deployment
+
+### AI/ML Framework
+- **LangGraph**: Graph-based workflow orchestration for AI agents
+- **LangChain**: Core abstractions for LLM interactions
+- **AWS Bedrock**: Claude 3.5 Sonnet model for language processing
 
 ### Data Storage
 - **MongoDB**: Primary database for session data and metadata
@@ -122,9 +127,172 @@ File metadata collection:
 }
 ```
 
+## LangGraph Workflow Architecture
+
+### Workflow Overview
+
+The system uses LangGraph to orchestrate a multi-step AI workflow for processing research transcripts. The workflow is designed as a directed acyclic graph (DAG) with sequential steps and conditional error handling.
+
+```mermaid
+graph TD
+    A[START] --> B[transcript_loader]
+    B --> C{Check Status}
+    C -->|Success| D[remove_pii]
+    C -->|Error| END1[END]
+    D --> E{Check Status}
+    E -->|Success| F[validate_pii]
+    E -->|Error| END2[END]
+    F --> G{Check Status}
+    G -->|Success| H[affinity_mapping]
+    G -->|Error| END3[END]
+    H --> I{Check Status}
+    I -->|Success| J[generate_findings]
+    I -->|Error| END4[END]
+    J --> K[END]
+```
+
+### Workflow State Management
+
+#### WorkflowState Structure
+```typescript
+interface WorkflowState {
+  // Core workflow fields
+  analysis_id: string;
+  process_start_date: datetime;
+  status: AgentStatus;
+  error_message: string | null;
+
+  // Transcript data
+  transcripts: string[];
+  transcripts_pii_cleaned: string[];
+
+  // Generated outputs
+  affinity_map: string | null;
+  findings_report: string | null;
+}
+```
+
+#### Agent Status Progression
+The workflow tracks fine-grained status through the following states:
+- `STARTING` - Workflow initialization
+- `LOADING_TRANSCRIPTS` - Fetching files from S3
+- `REMOVING_PII` - Processing transcripts to remove PII
+- `VALIDATING_PII` - Validating PII removal completion
+- `GENERATING_AFFINITY_MAP` - Creating affinity map
+- `GENERATING_FINDINGS` - Generating research findings report
+- `FINISHED` - Successful completion
+- `FAILED` - Error state
+
+#### State Persistence Strategy
+- **Real-time Sync**: Each node execution automatically syncs state to MongoDB
+- **Error Recovery**: Failed states are persisted with error messages
+- **Idempotency**: State updates are safe to retry
+- **Projection**: Large text fields are loaded on-demand for API responses
+
+### Workflow Nodes Implementation
+
+#### 1. Transcript Loader Node
+**Purpose**: Load transcript files from S3 into workflow state
+- **Input**: `analysis_id`
+- **Output**: `transcripts[]` populated with file content
+- **S3 Integration**: Concurrent file loading for performance
+- **Error Handling**: Missing files cause workflow failure
+
+#### 2. PII Removal Node
+**Purpose**: Remove personally identifiable information from transcripts
+- **LLM Integration**: AWS Bedrock Claude 3.5 Sonnet
+- **Processing**: Concurrent processing of multiple transcripts
+- **Output**: `transcripts_pii_cleaned[]` with sanitized content
+- **Prompt Engineering**: Structured prompts for consistent PII removal
+
+#### 3. PII Validation Node
+**Purpose**: Validate that PII has been successfully removed
+- **Validation Logic**: LLM-based verification of cleaned transcripts
+- **Fail-Safe**: Hard failure if PII is detected in cleaned content
+- **Quality Assurance**: Ensures compliance with data protection requirements
+
+#### 4. Affinity Mapping Node
+**Purpose**: Generate affinity map from cleaned transcripts
+- **Input**: All cleaned transcripts combined
+- **LLM Processing**: Claude 3.5 Sonnet generates structured affinity map
+- **Output**: Markdown-formatted affinity map
+- **Domain Expertise**: Prompts include UX research methodology
+
+#### 5. Findings Report Node
+**Purpose**: Generate comprehensive research findings report
+- **Input**: Affinity map + original cleaned transcripts for context
+- **Output**: Structured markdown findings report
+- **Research Standards**: Follows UX research reporting best practices
+
+### AWS Bedrock Integration
+
+#### Configuration
+```python
+# AWS Bedrock Configuration
+bedrock_model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+bedrock_region: str = "eu-central-1"
+```
+
+#### LLM Client Architecture
+- **Centralized Client**: Single Bedrock client instance with connection pooling
+- **Error Handling**: Retry logic and graceful degradation
+- **Response Processing**: Structured parsing of LLM outputs
+- **Cost Optimization**: Efficient prompt design to minimize token usage
+
+#### Prompt Engineering Strategy
+- **Modular Prompts**: Separate prompt templates for each workflow step
+- **Context Management**: Efficient context passing between nodes
+- **Output Formatting**: Structured outputs with consistent markdown formatting
+- **Domain Expertise**: Research methodology embedded in prompts
+
+### Error Handling and Resilience
+
+#### Conditional Workflow Execution
+```python
+def should_continue(state: WorkflowState) -> str:
+    """Conditional edge function for error handling."""
+    if state.get("status") == AgentStatus.FAILED:
+        return "END"
+    return "continue"
+```
+
+#### State Synchronization
+- **Automatic Sync**: Every node execution triggers state persistence
+- **Error State Capture**: Failed states are immediately persisted
+- **Monitoring**: Comprehensive logging for workflow debugging
+- **Recovery**: Failed workflows leave clear error trails
+
+#### Concurrency Control
+- **Workflow Registry**: Prevents duplicate workflow execution
+- **Resource Management**: Controlled S3 and database connections
+- **Memory Efficiency**: Streaming file operations where possible
+
+### Workflow Orchestration
+
+#### Execution Entry Point
+```python
+async def start_analysis_workflow(
+    analysis_id: str, repository: ResearchAnalysisRepository
+) -> None:
+    # Execute LangGraph workflow
+    final_state = await execute_research_analysis_workflow(analysis_id, repository)
+
+    # Update coarse-grained status based on workflow result
+    if final_state["status"] == AgentStatus.FINISHED:
+        await repository.update_analysis_status(analysis_id, AnalysisStatus.COMPLETED)
+    else:
+        await repository.update_analysis_status(analysis_id, AnalysisStatus.ERROR)
+```
+
+#### Background Processing
+- **Async Execution**: Non-blocking workflow execution
+- **Status Polling**: Clients poll for completion via REST API
+- **Progress Tracking**: Fine-grained status updates throughout workflow
+- **Resource Cleanup**: Automatic cleanup on completion or failure
+
 ## Component Architecture
 
-### Layered Architecture
+### Enhanced Layered Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -144,12 +312,59 @@ File metadata collection:
 └─────────────────────────────────────────────────────────────┘
                               │
 ┌─────────────────────────────────────────────────────────────┐
+│                    AI/ML Processing Layer                   │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │ LangGraph   │  │   Bedrock   │  │   Prompt Templates  │  │
+│  │ Workflow    │  │ LLM Client  │  │   (Domain Expert)   │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────┐
 │                    Data Access Layer                        │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
 │  │ Repository  │  │   S3 Client │  │   MongoDB Client    │  │
 │  │  (Database) │  │ (File Stor) │  │   (Primary DB)      │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
+```
+
+### LangGraph Workflow Components
+
+```mermaid
+graph LR
+    subgraph "LangGraph Workflow Engine"
+        A[StateGraph] --> B[Node Registry]
+        B --> C[Edge Conditions]
+        C --> D[Execution Engine]
+    end
+
+    subgraph "Workflow Nodes"
+        E[TranscriptLoader]
+        F[PIIRemover]
+        G[PIIValidator]
+        H[AffinityMapper]
+        I[FindingsGenerator]
+    end
+
+    subgraph "External Integrations"
+        J[AWS Bedrock]
+        K[S3 Storage]
+        L[MongoDB]
+    end
+
+    D --> E
+    D --> F
+    D --> G
+    D --> H
+    D --> I
+
+    E --> K
+    F --> J
+    G --> J
+    H --> J
+    I --> J
+
+    A --> L
 ```
 
 ### Dependency Injection
@@ -243,6 +458,30 @@ All errors follow a consistent format:
 - JSON body with `status`, `error_message`, and optional `code`
 - Detailed logging server-side without exposing internals
 
+## Performance Considerations
+
+### Database Optimization
+- Strategic indexes on query-heavy fields
+- Projection queries for list operations (exclude large fields)
+- Connection pooling via AsyncMongoClient
+
+### LangGraph Workflow Optimization
+- **Concurrent Operations**: Parallel file loading and transcript processing
+- **State Caching**: Efficient state synchronization to minimize database writes
+- **Memory Management**: Streaming operations for large transcript files
+- **LLM Efficiency**: Optimized prompts to reduce token usage and response time
+
+### File Processing
+- Streaming uploads to S3
+- Asynchronous workflow processing
+- Background task execution
+
+### Memory Management
+- Streaming file operations
+- Lazy loading of large documents
+- Proper cleanup in error scenarios
+- Efficient LangGraph state management
+
 ## Configuration Management
 
 ### Environment-based Configuration
@@ -258,6 +497,10 @@ class AppConfig(BaseSettings):
     localstack_endpoint: Optional[str] = None
     aws_region: str = "eu-west-2"
 
+    # AWS Bedrock Configuration
+    bedrock_model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+    bedrock_region: str = "eu-central-1"
+
     # Application
     port: int = 8085
     tracing_header: str = "x-cdp-request-id"
@@ -268,8 +511,10 @@ class AppConfig(BaseSettings):
 - `MONGO_URI` - MongoDB connection string
 - `LOCALSTACK_ENDPOINT` - LocalStack endpoint for S3 and other AWS services
 - `AWS_REGION` - AWS region configuration
-- `AWS_ACCESS_KEY_ID` - AWS credentials
+- `AWS_ACCESS_KEY_ID` - AWS credentials for Bedrock and S3
 - `AWS_SECRET_ACCESS_KEY` - AWS credentials
+- `BEDROCK_MODEL_ID` - Specific Claude model version
+- `BEDROCK_REGION` - AWS region for Bedrock service
 
 ## File Storage Strategy
 
@@ -303,23 +548,6 @@ research/{analysis_id}/{uuid}-{safe_filename}
 - File content scanning
 - Encryption at rest
 - Audit logging
-
-## Performance Considerations
-
-### Database Optimization
-- Strategic indexes on query-heavy fields
-- Projection queries for list operations (exclude large fields)
-- Connection pooling via AsyncMongoClient
-
-### File Processing
-- Streaming uploads to S3
-- Asynchronous workflow processing
-- Background task execution
-
-### Memory Management
-- Streaming file operations
-- Lazy loading of large documents
-- Proper cleanup in error scenarios
 
 ## Monitoring and Observability
 
@@ -387,16 +615,25 @@ FROM python:3.12-slim AS base
 ### Scalability
 - Horizontal scaling with load balancers
 - Database read replicas
-- Distributed file processing
+- Distributed LangGraph workflow processing
+- LLM request caching and optimization
+
+### LangGraph Workflow Enhancements
+- **Parallel Processing**: Independent workflow branches for different analysis types
+- **Human-in-the-Loop**: Integration points for manual review and correction
+- **Workflow Versioning**: Support for different analysis methodologies
+- **Advanced Error Recovery**: Retry mechanisms and partial failure handling
 
 ### Features
 - WebSocket support for real-time status updates
 - Batch processing capabilities
 - Advanced analytics and reporting
-- Integration with external LangGraph services
+- Integration with external research tools
+- Multi-model LLM support (beyond Bedrock)
 
 ### Infrastructure
-- Kubernetes deployment
+- Kubernetes deployment with workflow scaling
 - Automated CI/CD pipelines
-- Monitoring dashboards
+- Monitoring dashboards for workflow performance
 - Backup and disaster recovery
+- Advanced observability for LangGraph executions
