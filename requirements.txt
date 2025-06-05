@@ -8,3 +8,5 @@ pymongo
 pymongo[aws,snappy,zstd,encryption]
 httpx
 uvicorn
+boto3
+python-multipart
