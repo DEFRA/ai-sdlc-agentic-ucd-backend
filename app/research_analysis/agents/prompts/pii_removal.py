@@ -9,7 +9,6 @@ Remove or replace the following types of PII:
 - Email addresses
 - Phone numbers
 - Physical addresses
-- Company names (unless they are well-known public companies)
 - Specific job titles that could identify individuals
 - Dates of birth or specific ages
 - Social security numbers or other ID numbers
@@ -18,7 +17,6 @@ Remove or replace the following types of PII:
 
 Replace removed PII with generic placeholders:
 - Names: [PARTICIPANT_1], [PARTICIPANT_2], etc.
-- Companies: [COMPANY_A], [COMPANY_B], etc.
 - Locations: [CITY], [REGION], [COUNTRY], etc.
 - Dates: [DATE], [TIMEFRAME], etc.
 

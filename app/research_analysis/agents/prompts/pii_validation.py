@@ -6,7 +6,6 @@ CRITICAL: The text has been through a redaction process that replaces PII with a
 
 DO NOT FLAG THESE BRACKETED PLACEHOLDERS (THESE ARE ACCEPTABLE):
 - [PARTICIPANT_1], [PARTICIPANT_2], [PERSON_A], [PERSON_B]
-- [COMPANY_A], [COMPANY_B], [ORGANIZATION_1]
 - [CITY], [CITY_A], [CITY_B], [REGION], [COUNTRY], [LOCATION_1]
 - [AGE], [AGE_RANGE], [SPECIFIC_AGE]
 - [ADDRESS], [HOME_ADDRESS], [WORK_ADDRESS]
@@ -15,11 +14,9 @@ DO NOT FLAG THESE BRACKETED PLACEHOLDERS (THESE ARE ACCEPTABLE):
 - [JOB_TITLE], [ROLE], [POSITION]
 - [REDACTED], [REMOVED], [ANONYMIZED]
 - Any text pattern like: "[SOMETHING]" where SOMETHING is in ALL_CAPS
-- Well-known public company names, for example (Microsoft, Google, Apple, etc.)./s
 
 ACCEPTABLE PHRASES THAT SHOULD NOT BE FLAGGED:
 - "I am [AGE] years old" ✓ ACCEPTABLE
-- "I work at [COMPANY_A]" ✓ ACCEPTABLE
 - "I live in [CITY_B]" ✓ ACCEPTABLE
 - "My address is [ADDRESS]" ✓ ACCEPTABLE
 - "Contact me at [EMAIL]" ✓ ACCEPTABLE
@@ -29,7 +26,6 @@ ONLY FLAG THESE TYPES OF ACTUAL PII (NOT IN BRACKETS):
 - Real emails: "john@company.com" (NOT [EMAIL])
 - Real phone numbers: "555-123-4567" (NOT [PHONE])
 - Real addresses: "123 Main Street, Boston" (NOT [ADDRESS])
-- Real company names: "Microsoft", "Google" (NOT [COMPANY_A])
 - Real ages: "I am 35 years old" (NOT "I am [AGE] years old")
 - Real locations: "New York", "California" (NOT [CITY_A])
 
@@ -59,7 +55,7 @@ def create_pii_validation_prompt(cleaned_transcript: str) -> str:
 {cleaned_transcript}
 
 CRITICAL REMINDER:
-- ANY text in square brackets like [AGE], [COMPANY_A], [ADDRESS] is ACCEPTABLE anonymization
+- ANY text in square brackets like [AGE], [ADDRESS] is ACCEPTABLE anonymization
 - ONLY flag actual real-world PII that is NOT in brackets
 - Phrases like "[AGE] years old" or "lives at [ADDRESS]" are CORRECTLY anonymized
 
