@@ -15,7 +15,8 @@ DO NOT FLAG THESE BRACKETED PLACEHOLDERS (THESE ARE ACCEPTABLE):
 - [JOB_TITLE], [ROLE], [POSITION]
 - [REDACTED], [REMOVED], [ANONYMIZED]
 - Any text pattern like: "[SOMETHING]" where SOMETHING is in ALL_CAPS
-- Well-known public company names, for example (Microsoft, Google, Apple, etc.)./s
+- Well-known public company names, for example (Microsoft, Google, Apple, etc.).
+- XXXX XXXX XXXX XXXX should not be flagged as a credit card validation failure.
 
 ACCEPTABLE PHRASES THAT SHOULD NOT BE FLAGGED:
 - "I am [AGE] years old" ✓ ACCEPTABLE
