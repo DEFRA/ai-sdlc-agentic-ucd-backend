@@ -52,7 +52,6 @@ def _create_pii_anonymizer() -> PresidioAnonymizer:
             "US_PASSPORT",
             "US_DRIVER_LICENSE",
             "US_ITIN",
-            "NRP",  # National Registry of Persons
             # UK-Specific Identifiers
             "UK_NHS",  # NHS numbers
             "UK_NINO",  # National Insurance numbers
@@ -66,8 +65,6 @@ def _create_pii_anonymizer() -> PresidioAnonymizer:
             "IP_ADDRESS",
             "URL",
             "CRYPTO",  # Cryptocurrency addresses
-            # Additional identifiers that could be PII
-            "ORGANIZATION",  # Company names
         ]
 
         # Set each field to use specific redaction placeholders
@@ -85,7 +82,6 @@ def _create_pii_anonymizer() -> PresidioAnonymizer:
             "US_PASSPORT": "[PASSPORT]",
             "US_DRIVER_LICENSE": "[DRIVER_LICENSE]",
             "US_ITIN": "[TAX_ID]",
-            "NRP": "[NATIONAL_ID]",
             # UK-Specific Identifiers
             "UK_NHS": "[NHS_NUMBER]",
             "UK_NINO": "[NATIONAL_INSURANCE]",
@@ -99,8 +95,6 @@ def _create_pii_anonymizer() -> PresidioAnonymizer:
             "IP_ADDRESS": "[IP_ADDRESS]",
             "URL": "[URL]",
             "CRYPTO": "[CRYPTO_ADDRESS]",
-            # Additional identifiers
-            "ORGANIZATION": "[COMPANY]",
         }
 
         for field in analyzed_fields:
