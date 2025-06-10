@@ -55,6 +55,22 @@ def _create_pii_anonymizer() -> PresidioAnonymizer:
             # UK-Specific Identifiers
             "UK_NHS",  # NHS numbers
             "UK_NINO",  # National Insurance numbers
+            "UK_PASSPORT",  # UK passport numbers
+            "UK_DRIVER_LICENSE",  # UK driving licence numbers
+            "UK_SORT_CODE",  # UK bank sort codes
+            "UK_TAX_ID",  # UK tax identification
+            "UK_POSTCODE",  # UK postal codes
+            "UK_VAT_NUMBER",  # VAT registration numbers
+            "UK_COMPANY_NUMBER",  # Companies House registration numbers
+            "UK_COUNCIL_TAX_REF",  # Council tax reference numbers
+            "UK_UTILITY_ACCOUNT",  # Utility account numbers
+            "UK_ELECTORAL_ROLL",  # Electoral roll numbers
+            "UK_STUDENT_ID",  # Student loan/university ID numbers
+            "UK_PENSION_REF",  # Pension reference numbers
+            "UK_BENEFIT_REF",  # Benefits reference numbers
+            "UK_COURT_REF",  # Court reference numbers
+            "UK_MEDICAL_REF",  # Medical reference numbers
+            "UK_INSURANCE_POLICY",  # Insurance policy numbers
             # Location/Address
             "LOCATION",
             # Dates and Time
@@ -85,6 +101,22 @@ def _create_pii_anonymizer() -> PresidioAnonymizer:
             # UK-Specific Identifiers
             "UK_NHS": "[NHS_NUMBER]",
             "UK_NINO": "[NATIONAL_INSURANCE]",
+            "UK_PASSPORT": "[UK_PASSPORT]",
+            "UK_DRIVER_LICENSE": "[UK_DRIVER_LICENSE]",
+            "UK_SORT_CODE": "[UK_SORT_CODE]",
+            "UK_TAX_ID": "[UK_TAX_ID]",
+            "UK_POSTCODE": "[UK_POSTCODE]",
+            "UK_VAT_NUMBER": "[UK_VAT_NUMBER]",
+            "UK_COMPANY_NUMBER": "[UK_COMPANY_NUMBER]",
+            "UK_COUNCIL_TAX_REF": "[UK_COUNCIL_TAX_REF]",
+            "UK_UTILITY_ACCOUNT": "[UK_UTILITY_ACCOUNT]",
+            "UK_ELECTORAL_ROLL": "[UK_ELECTORAL_ROLL]",
+            "UK_STUDENT_ID": "[UK_STUDENT_ID]",
+            "UK_PENSION_REF": "[UK_PENSION_REF]",
+            "UK_BENEFIT_REF": "[UK_BENEFIT_REF]",
+            "UK_COURT_REF": "[UK_COURT_REF]",
+            "UK_MEDICAL_REF": "[UK_MEDICAL_REF]",
+            "UK_INSURANCE_POLICY": "[UK_INSURANCE_POLICY]",
             # Location/Address
             "LOCATION": "[ADDRESS]",
             # Dates and Time
