@@ -39,6 +39,9 @@ python -m pip install --upgrade pip
 # install the dependencies
 pip install -r requirements-dev.txt
 
+# download the spaCy language model for PII detection
+python -m spacy download st
+
 # install the pre-commit hooks
 pre-commit install
 ```
@@ -136,7 +139,7 @@ Follow the convention below for local environment variables and secrets in local
 
 **Secrets:** `compose/secrets.env`. You need to create this, as it's excluded from version control.
 
-**Libraries:** Ensure the python virtual environment is configured and libraries are installed using `requirements-dev.txt`, [as above](#python)
+**Libraries:** Ensure the python virtual environment is configured and libraries are installed using `requirements-dev.txt`, [as above](#python). Also ensure the spaCy language model is downloaded for PII detection functionality.
 
 **Pre-Commit Hooks:** Ensure you install the pre-commit hooks, as above
 
@@ -158,7 +161,7 @@ The service will then run on `http://localhost:8085`
 
 ### Testing
 
-Ensure the python virtual environment is configured and libraries are installed using `requirements-dev.txt`, [as above](#python)
+Ensure the python virtual environment is configured and libraries are installed using `requirements-dev.txt`, [as above](#python). Also ensure the spaCy language model is downloaded for PII detection functionality.
 
 Testing follows the [FastApi documented approach](https://fastapi.tiangolo.com/tutorial/testing/); using pytest & starlette.
 

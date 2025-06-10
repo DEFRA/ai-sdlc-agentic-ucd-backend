@@ -13,3 +13,8 @@ python-multipart
 langgraph
 langchain-core
 langchain-aws
+langchain-experimental
+presidio-analyzer
+presidio-anonymizer
+spacy
+faker
