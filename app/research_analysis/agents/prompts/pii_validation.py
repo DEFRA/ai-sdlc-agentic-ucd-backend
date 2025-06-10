@@ -42,7 +42,7 @@ CONFIDENCE: HIGH
 
 Example response for ACTUAL PII violation:
 PII_FOUND: YES
-ISSUES: Found real email john.smith@company.com on line 3, found real company name Microsoft on line 7
+ISSUES: Found real email john.smith@company.com on line 3
 CONFIDENCE: HIGH
 
 REMEMBER: If you see ANY text in square brackets like [ANYTHING], that is acceptable anonymization - DO NOT flag it as PII."""
